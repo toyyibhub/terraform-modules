@@ -5,6 +5,7 @@ module "ec2" {
   instance_type = "t2.micro"
   instance_name = "qa-ec2"
   env            = var.env
+  key_name       = "practise-kp"
 }
 
 module "s3" {

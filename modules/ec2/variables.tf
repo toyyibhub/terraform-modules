@@ -13,3 +13,8 @@ variable "instance_name" {
 variable "env" {
   type = string
 }
+
+variable "key_name" {
+  description = "AWS EC2 Key Pair name"
+  type        = string
+}
