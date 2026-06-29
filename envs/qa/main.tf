@@ -3,21 +3,21 @@ module "ec2" {
 
   ami_id         = "ami-0b6d9d3d33ba97d99"
   instance_type = "t2.micro"
-  instance_name = "dev-ec2"
+  instance_name = "qa-ec2"
   env            = var.env
 }
 
 module "s3" {
   source = "../../modules/s3"
 
-  bucket_name = "my-simple-dev-bucket-12345"
+  bucket_name = "my-simple-qa-bucket-12345"
   env         = var.env
 }
 
 module "iam_user" {
   source = "../../modules/iam"
 
-  user_name   = "john.doe"
+  user_name   = "john.giwa"
   team        = "DevOps"
-  environment = "dev"
+  environment = "qa"
 }
