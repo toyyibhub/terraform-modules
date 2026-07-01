@@ -1,0 +1,42 @@
+---
+- name: Configure Web Servers
+  hosts: webservers
+  become: true
+
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create custom homepage
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Ansible Demo</title>
+          </head>
+          <body style="font-family: Arial; text-align: center; margin-top: 80px;">
+              <h1> Ansible Configuration Successful!</h1>
+              <h2>{{ inventory_hostname }}</h2>
+
+              <p>This server was provisioned with <strong>Terraform</strong>.</p>
+
+              <p>This web page was deployed using <strong>Ansible</strong>.</p>
+
+              <p>Environment automation is working successfully.</p>
+          </body>
+          </html>
+
+    - name: Ensure Nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes
