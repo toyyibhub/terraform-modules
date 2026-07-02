@@ -6,7 +6,7 @@ A production-style Infrastructure as Code (IaC) project built with Terraform on 
 
 ## Overview
 
-This project provisions and manages AWS infrastructure using reusable Terraform modules across multiple environments. Remote state is stored in S3 with DynamoDB-backed locking, ensuring safe, collaborative deployments.
+This project provisions and manages AWS infrastructure using reusable Terraform modules across multiple environments. Remote state is stored in S3 with DynamoDB-backed locking, ensuring safe, collaborative deployments. Ansible handles post-provisioning configuration, deploying a simple HTML web server on the provisioned EC2 instances.
 
 **Environments:** `dev` · `qa`
 
@@ -63,6 +63,11 @@ Infrastructure is designed around a modular Terraform pattern — each AWS resou
 │   ├── s3/
 │   └── security_group/
 │
+├── ansible-playbook/         # Post-provisioning configuration
+│   ├── webserver.yml         # Playbook — installs and configures Apache/Nginx
+│   ├── ansible.cfg           # Ansible runtime configuration
+│   └── inv.ini               # Inventory file — EC2 hosts per environment
+│
 └── .terraform.lock.hcl
 ```
 
@@ -92,6 +97,7 @@ Ensure the following are installed and configured before deploying:
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.5
 - [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
+- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html) >= 2.14
 - AWS credentials configured locally
 
 Verify your credentials:
@@ -140,6 +146,45 @@ Repeat from step 1 using `envs/qa` to deploy the QA environment.
 
 ---
 
+## Ansible — Web Server Configuration
+
+Once Terraform has provisioned the EC2 instances, Ansible handles post-provisioning configuration — installing and serving a simple HTML page via a web server.
+
+### Ansible Directory
+
+| File | Purpose |
+|---|---|
+| `webserver.yml` | Playbook that installs and configures the web server and deploys the HTML page |
+| `ansible.cfg` | Ansible runtime settings (remote user, key path, host key checking) |
+| `inv.ini` | Inventory file listing EC2 public IPs per environment |
+
+### Running the Playbook
+
+**1. Update the inventory** with your EC2 public IPs after `terraform apply`:
+
+```ini
+# ansible-playbook/inv.ini
+[webservers]
+<ec2-public-ip>
+```
+
+**2. Run the playbook**
+
+```bash
+cd ansible-playbook
+ansible-playbook -i inv.ini webserver.yml
+```
+
+**3. Verify**
+
+```bash
+curl http://<ec2-public-ip>
+```
+
+The playbook installs a web server (Apache/Nginx), deploys a basic HTML page, and ensures the service is enabled on boot.
+
+---
+
 ## Environments
 
 ### Dev
@@ -183,7 +228,7 @@ Creates environment-specific S3 buckets with consistent naming conventions and c
 ## Roadmap
 
 - [ ] CI/CD pipeline integration (GitHub Actions or Jenkins)
-- [ ] Ansible playbooks for post-provisioning EC2 configuration
+- [x] Ansible playbooks for post-provisioning EC2 configuration
 - [ ] Production environment (`prod`)
 - [ ] VPC module for full network isolation
 - [ ] CloudWatch / Datadog monitoring integration
